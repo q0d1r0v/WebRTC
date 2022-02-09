@@ -1,0 +1,33 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.call_btn {
+  width: 50px;
+  height: 50px;
+  margin: auto;
+  margin-top: 13px;
+  cursor: pointer;
+  background-color: red;
+  border-radius: 50%;
+  color: #fff;
+}
+.call_btn:active {
+  background-color: rgb(255, 100, 100);
+}
+
+.call_end_btn {
+  width: 50px;
+  height: 50px;
+  margin: auto;
+  margin-top: 13px;
+  cursor: pointer;
+  background-color: #0091ea;
+  border-radius: 50%;
+  color: #fff;
+}
+.call_end_btn:active {
+  background-color: #50bcff;
+}

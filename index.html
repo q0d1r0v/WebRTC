@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons" />
+    <link rel="stylesheet" href="./styles/main.css" />
+    <title>web-call</title>
+    <style>
+      .video {
+        position: absolute;
+        top: 0;
+        width: 100%;
+        height: 100%;
+      }
+      .ourVideo {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="dialog" style="display: none">
+      <div style="width: 100%; height: 100vh; background-color: rgba(0, 0, 0, 0.692); position: absolute; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center">
+        <div style="width: 600px; height: 500px; background-color: #fff; border-radius: 10px">
+          <div style="width: 600px; height: 500px; position: relative" id="remoteVideo">
+            <div style="width: 200px; height: 130px; position: absolute; bottom: 0; right: 0; z-index: 10" id="ourVideo"></div>
+          </div>
+          <div style="background-color: #fff; margin-top: 10px; padding: 15px; border-radius: 10px; text-align: center; position: relative">
+            <div onclick="endCall()" class="call_btn" style="text-align: center; display: inline-block; margin-right: 10px">
+              <div title="Qo'ng'iroqni yakunlash" style="margin: auto">
+                <i class="material-icons" style="color: #fff; margin-top: 12px; -webkit-user-select: none">call_end</i>
+              </div>
+            </div>
+            <div id="share-screen" class="call_end_btn" style="text-align: center; display: inline-block">
+              <div title="Ekranni ulashish" style="margin: auto">
+                <i class="material-icons" style="color: #fff; margin-top: 12px; -webkit-user-select: none">monitor</i>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin: auto; text-align: center; padding-top: 30px">
+      <label>Your ID:</label> <br />
+      <textarea disabled id="yourId"></textarea> <br />
+      <label>Other ID</label> <br />
+      <textarea id="otherId"></textarea> <br />
+      <br />
+      <button id="call" style="padding: 5px 15px" title="Qo'ng'iroq qilish">call</button>
+    </div>
+
+    <script src="./min-js/min.js"></script>
+
+    <script>
+      let myStream;
+      let peerList = [];
+      let currentPeer;
+      let peer = new Peer();
+      window.addEventListener("load", (event) => {
+        //id olish
+        peer.on("open", (id) => {
+          document.getElementById("yourId").innerHTML = id;
+        });
+        //id olish
+
+        // qo'ng'iroqni qabul qilish
+        peer.on("call", (call) => {
+          navigator.mediaDevices
+            .getUserMedia({
+              video: true,
+              audio: true,
+            })
+            .then((stream) => {
+              let dialog = document.getElementById("dialog");
+              dialog.style.display = "inline-block";
+
+              myStream = stream;
+              addOurVideo(stream);
+              call.answer(stream);
+              call.on("stream", (remoteStream) => {
+                if (!peerList.includes(call.peer)) {
+                  addRemoteVideo(remoteStream);
+                  currentPeer = call.peerConnection;
+                  peerList.push(call.peer);
+                }
+              });
+            })
+            .catch((e) => {
+              console.log(e + " unable to get media");
+            });
+        });
+        // qo'ng'iroqni qabul qilish
+
+        document.getElementById("call").addEventListener("click", (e) => {
+          let otherId = document.getElementById("otherId").value;
+          let dialog = document.getElementById("dialog");
+
+          if (otherId) {
+            dialog.style.display = "inline-block";
+            callID(otherId);
+          } else {
+            alert("other id ni kiriting!");
+          }
+        });
+
+        // share-screen
+        document.getElementById("share-screen").addEventListener("click", (e) => {
+          navigator.mediaDevices
+            .getDisplayMedia({
+              video: {
+                cursor: "always",
+              },
+              audio: {
+                echoCancellation: true,
+                noiseSuppression: true,
+              },
+            })
+            .then((stream) => {
+              let videoTrack = stream.getVideoTracks()[0];
+              videoTrack.onended = () => {
+                stopScreenShare();
+              };
+              let sender = currentPeer.getSenders().find((s) => {
+                return s.track.kind == videoTrack.kind;
+              });
+              sender.replaceTrack(videoTrack);
+            })
+            .catch((e) => {
+              console.log("unable to get display media " + e);
+            });
+        });
+        // share-screen
+
+        // qo'ng'iroq qilish
+        function callID(id) {
+          navigator.mediaDevices
+            .getUserMedia({
+              video: true,
+              audio: true,
+            })
+            .then(function (stream) {
+              myStream = stream;
+              addOurVideo(stream);
+              let call = peer.call(id, stream);
+              call.on("stream", (remoteStream) => {
+                if (!peerList.includes(call.peer)) {
+                  addRemoteVideo(remoteStream);
+                  currentPeer = call.peerConnection;
+                  peerList.push(call.peer);
+                }
+              });
+            })
+            .catch((e) => {
+              console.log(e + " unable to get media");
+            });
+        }
+        // qo'ng'iroq qilish
+
+        // screen-shareni to'xtatish
+        function stopScreenShare() {
+          let videoTrack = myStream.getVideoTracks()[0];
+          let sender = currentPeer.getSenders().find((s) => {
+            return s.track.kind == videoTrack.kind;
+          });
+          sender.replaceTrack(videoTrack);
+        }
+        // screen-shareni to'xtatish
+
+        //video streamni scrrenga olib chiqish
+        function addRemoteVideo(stream) {
+          let video = document.createElement("video");
+          video.classList.add("video");
+          video.srcObject = stream;
+          video.play();
+          document.getElementById("remoteVideo").append(video);
+        }
+        // video streamni scrrenga olib chiqish
+
+        // shaxsiy camera videosini chiqarsh
+        function addOurVideo(stream) {
+          let video = document.createElement("video");
+          video.classList.add("ourVideo");
+          video.srcObject = stream;
+          video.play();
+          document.getElementById("ourVideo").append(video);
+        }
+        // shaxsiy camera videosini chiqarsh
+      });
+      // qo'ng'iroqni yakunlash
+      function endCall() {
+        window.location.reload();
+      }
+      // qo'ng'iroqni yakunlash
+    </script>
+  </body>
+</html>
