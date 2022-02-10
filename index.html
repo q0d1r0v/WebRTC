@@ -74,6 +74,7 @@
               <i class="material-icons">call</i>
             </div>
             <div
+              id="calling-false"
               class="call_end"
               style="
                 width: 60px;
@@ -98,13 +99,44 @@
       </div>
     </div>
 
-    <div style="margin: auto; text-align: center; padding-top: 30px">
-      <label>Your ID:</label> <br />
-      <textarea disabled id="yourId"></textarea> <br />
-      <label>Other ID</label> <br />
-      <textarea id="otherId"></textarea> <br />
-      <br />
-      <button id="call" style="padding: 5px 15px" title="Qo'ng'iroq qilish">call</button>
+    <div style="width: 100%; height: 100vh; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center">
+      <div style="width: 500px; height: 400px; box-shadow: 0px 0px 18px -11px black; border-radius: 10px">
+        <h1 style="text-align: center; margin-top: 15px">Qo'ng'iroq qilish</h1>
+        <br />
+        <div style="text-align: center; margin: auto; margin-top: 10px">
+          <label style="font-size: 18px">Your ID:</label> <br />
+          <br />
+          <textarea disabled id="yourId" style="padding: 10px"></textarea> <br />
+          <br />
+          <label style="font-size: 18px">Other ID:</label> <br />
+          <br />
+          <textarea id="otherId" style="padding: 10px"></textarea> <br />
+          <br />
+          <br />
+          <div style="width: 100%; height: 100%; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center">
+            <div
+              title="Qo'ng'iroq qilish"
+              id="call"
+              style="
+                width: 50px;
+                height: 50px;
+                border-radius: 50%;
+                background-color: aqua;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: #fff;
+                cursor: pointer;
+                -webkit-user-select: none;
+              "
+            >
+              <i class="material-icons">call</i>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <script src="./min-js/min.js"></script>
@@ -126,6 +158,8 @@
         peer.on("call", (call) => {
           let call_dialog = document.getElementById("calling-dialog");
           let calling_true_btn = document.getElementById("calling-true");
+          let calling_false_btn = document.getElementById("calling-false");
+          let dialog = document.getElementById("dialog");
           call_dialog.style.display = "block";
 
           calling_true_btn.addEventListener("click", (e) => {
@@ -153,16 +187,21 @@
                 console.log(e + " unable to get media");
               });
           });
+
+          calling_false_btn.addEventListener("click", (e) => {
+            dialog.style.display = "none";
+            window.location.reload();
+          });
         });
         // qo'ng'iroqni qabul qilish
 
         document.getElementById("call").addEventListener("click", (e) => {
           let otherId = document.getElementById("otherId").value;
-          let youeId = document.getElementById("yourId").value;
+          let yourId = document.getElementById("yourId").value;
           let dialog = document.getElementById("dialog");
 
           if (otherId) {
-            if (otherId !== youeId) {
+            if (otherId !== yourId) {
               dialog.style.display = "inline-block";
               callID(otherId);
             } else {
@@ -268,9 +307,9 @@
         calling_dialog.style.display = "none";
       }
 
-      function callFalse() {
-        window.location.reload();
-      }
+      // function callFalse() {
+      //   window.location.reload();
+      // }
     </script>
   </body>
 </html>
