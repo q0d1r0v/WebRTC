@@ -2,6 +2,7 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: sans-serif;
 }
 
 .call_btn {
@@ -30,4 +31,11 @@
 }
 .call_end_btn:active {
   background-color: #50bcff;
+}
+
+.call1:active {
+  box-shadow: 0px 0px 18px -8px black;
+}
+.call_end:active {
+  box-shadow: 0px 0px 18px -8px black;
 }

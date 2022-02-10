@@ -44,6 +44,60 @@
       </div>
     </div>
 
+    <div id="calling-dialog" style="display: none">
+      <div style="width: 100%; height: 100vh; background-color: rgba(0, 0, 0, 0.692); position: absolute; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center">
+        <div style="width: 500px; height: 300px; background-color: #fff; border-radius: 10px; position: relative">
+          <div style="text-align: center; margin-top: 35px">
+            <h1>Qo'ng'iroq qilinmoqda</h1>
+          </div>
+          <div style="width: 100%; height: 100px; position: absolute; bottom: 0; margin: 0; padding: 0; display: flex; align-items: center; justify-content: center">
+            <div
+              id="calling-true"
+              class="call1"
+              style="
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background-color: lawngreen;
+                color: #fff;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 35px;
+                cursor: pointer;
+                -webkit-user-select: none;
+              "
+              onclick="callTrue()"
+            >
+              <i class="material-icons">call</i>
+            </div>
+            <div
+              class="call_end"
+              style="
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background-color: red;
+                color: #fff;
+                margin: 0;
+                padding: 0;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                -webkit-user-select: none;
+              "
+              onclick="callFalse()"
+            >
+              <i class="material-icons">call_end</i>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div style="margin: auto; text-align: center; padding-top: 30px">
       <label>Your ID:</label> <br />
       <textarea disabled id="yourId"></textarea> <br />
@@ -56,6 +110,7 @@
     <script src="./min-js/min.js"></script>
 
     <script>
+      let calling_true = false;
       let myStream;
       let peerList = [];
       let currentPeer;
@@ -69,41 +124,52 @@
 
         // qo'ng'iroqni qabul qilish
         peer.on("call", (call) => {
-          navigator.mediaDevices
-            .getUserMedia({
-              video: true,
-              audio: true,
-            })
-            .then((stream) => {
-              let dialog = document.getElementById("dialog");
-              dialog.style.display = "inline-block";
+          let call_dialog = document.getElementById("calling-dialog");
+          let calling_true_btn = document.getElementById("calling-true");
+          call_dialog.style.display = "block";
 
-              myStream = stream;
-              addOurVideo(stream);
-              call.answer(stream);
-              call.on("stream", (remoteStream) => {
-                if (!peerList.includes(call.peer)) {
-                  addRemoteVideo(remoteStream);
-                  currentPeer = call.peerConnection;
-                  peerList.push(call.peer);
-                }
+          calling_true_btn.addEventListener("click", (e) => {
+            navigator.mediaDevices
+              .getUserMedia({
+                video: true,
+                audio: true,
+              })
+              .then((stream) => {
+                let dialog = document.getElementById("dialog");
+                dialog.style.display = "inline-block";
+
+                myStream = stream;
+                addOurVideo(stream);
+                call.answer(stream);
+                call.on("stream", (remoteStream) => {
+                  if (!peerList.includes(call.peer)) {
+                    addRemoteVideo(remoteStream);
+                    currentPeer = call.peerConnection;
+                    peerList.push(call.peer);
+                  }
+                });
+              })
+              .catch((e) => {
+                console.log(e + " unable to get media");
               });
-            })
-            .catch((e) => {
-              console.log(e + " unable to get media");
-            });
+          });
         });
         // qo'ng'iroqni qabul qilish
 
         document.getElementById("call").addEventListener("click", (e) => {
           let otherId = document.getElementById("otherId").value;
+          let youeId = document.getElementById("yourId").value;
           let dialog = document.getElementById("dialog");
 
           if (otherId) {
-            dialog.style.display = "inline-block";
-            callID(otherId);
+            if (otherId !== youeId) {
+              dialog.style.display = "inline-block";
+              callID(otherId);
+            } else {
+              alert("siz o'zingizga qo'ng'iroq qila olmaysiz");
+            }
           } else {
-            alert("other id ni kiriting!");
+            alert("boshqa foydalanuvchining IDsini kiriting!");
           }
         });
 
@@ -195,6 +261,16 @@
         window.location.reload();
       }
       // qo'ng'iroqni yakunlash
+
+      function callTrue() {
+        calling_true = true;
+        let calling_dialog = document.getElementById("calling-dialog");
+        calling_dialog.style.display = "none";
+      }
+
+      function callFalse() {
+        window.location.reload();
+      }
     </script>
   </body>
 </html>
